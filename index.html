@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kuis Sejarah Bani Umayyah</title>
+    <!-- Memuat Tailwind CSS untuk styling modern -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Memuat Lucide Icons untuk ikon -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* Menggunakan font Inter */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f0fdf4; /* Warna hijau muda sebagai latar belakang */
+        }
+        /* Style untuk efek feedback jawaban */
+        .feedback-correct {
+            background-color: #34d399; /* Hijau terang */
+            border-color: #059669;
+            color: white;
+            animation: pulse-correct 0.3s ease-out;
+        }
+        .feedback-incorrect {
+            background-color: #f87171; /* Merah terang */
+            border-color: #dc2626;
+            color: white;
+            animation: shake-incorrect 0.3s ease-out;
+        }
+        /* Animasi feedback */
+        @keyframes pulse-correct {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+        @keyframes shake-incorrect {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-5px); }
+            40%, 80% { transform: translateX(5px); }
+        }
+        /* Mengatur ikon agar mudah diakses di JS */
+        .icon {
+            width: 24px;
+            height: 24px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <!-- Container Utama Aplikasi -->
+    <div id="quiz-container" class="w-full max-w-lg bg-white rounded-xl shadow-2xl p-6 md:p-8 border-t-8 border-green-600">
+        
+        <header class="mb-6 text-center">
+            <h1 class="text-3xl font-extrabold text-green-800 mb-1 flex items-center justify-center">
+                <i data-lucide="book-open-text" class="icon text-amber-500 mr-2"></i>
+                Kuis Bani Umayyah
+            </h1>
+            <p class="text-sm text-gray-500">Materi PAI Kelas 7 SMP Islam Manba'ul Ulum</p>
+            <div id="progress-bar" class="w-full h-2 bg-gray-200 rounded-full mt-4 overflow-hidden">
+                <div id="progress-indicator" class="h-full bg-green-500 transition-all duration-500 ease-out" style="width: 0%;"></div>
+            </div>
+        </header>
+
+        <!-- Layar Kuis (Tampil saat quiz dimulai) -->
+        <div id="quiz-screen">
+            <p id="question-number" class="text-sm font-semibold text-green-600 mb-3"></p>
+            <div class="bg-amber-50 rounded-lg p-4 mb-6 border-l-4 border-amber-500 shadow-md">
+                <p id="question-text" class="text-lg font-medium text-gray-800"></p>
+            </div>
+            
+            <div id="options-container" class="space-y-3">
+                <!-- Tombol Opsi akan dimasukkan di sini oleh JavaScript -->
+            </div>
+
+            <!-- Pesan Feedback Sementara -->
+            <div id="feedback-message" class="mt-4 p-3 text-center rounded-lg font-semibold transition-opacity duration-300 opacity-0"></div>
+        </div>
+
+        <!-- Layar Hasil (Tampil saat quiz selesai) -->
+        <div id="result-screen" class="text-center hidden">
+            <i id="result-icon" data-lucide="trophy" class="icon mx-auto text-amber-500 w-16 h-16 mb-4"></i>
+            <h2 id="result-title" class="text-3xl font-extrabold text-green-700 mb-2"></h2>
+            <p id="result-score" class="text-xl text-gray-700 mb-6"></p>
+            <p id="result-analysis" class="text-sm text-gray-600 mb-6 px-4"></p>
+            <button onclick="startQuiz()" class="px-6 py-3 bg-green-600 text-white font-semibold rounded-full hover:bg-green-700 transition duration-300 shadow-lg flex items-center justify-center mx-auto">
+                <i data-lucide="rotate-ccw" class="icon w-5 h-5 mr-2"></i>
+                Coba Lagi
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Data Soal tentang Sejarah Bani Umayyah
+        const questions = [
+            {
+                question: "Siapakah pendiri resmi Daulah Bani Umayyah di Damaskus, setelah peristiwa 'Amul Jama’ah' (Tahun Persatuan) pada tahun 41 H?",
+                options: ["Ali bin Abi Thalib", "Umar bin Abdul Aziz", "Muawiyah bin Abi Sufyan", "Marwan bin Al-Hakam"],
+                answer: "Muawiyah bin Abi Sufyan"
+            },
+            {
+                question: "Kota manakah yang ditetapkan sebagai ibukota pusat pemerintahan pada masa awal Dinasti Bani Umayyah?",
+                options: ["Makkah", "Madinah", "Kufah", "Damaskus"],
+                answer: "Damaskus"
+            },
+            {
+                question: "Perubahan sistem pemerintahan dari 'Musyawarah' menjadi 'Monarki Herediter' (keturunan) dimulai pada masa khalifah ini. Siapakah beliau?",
+                options: ["Muawiyah bin Abi Sufyan", "Yazid bin Muawiyah", "Walid bin Abdul Malik", "Sulaiman bin Abdul Malik"],
+                answer: "Muawiyah bin Abi Sufyan"
+            },
+            {
+                question: "Panglima yang berhasil menaklukkan Andalusia (Spanyol) pada masa Khalifah Al-Walid bin Abdul Malik adalah...",
+                options: ["Salahuddin Al-Ayyubi", "Muhammad Al-Fatih", "Thariq bin Ziyad", "Khalid bin Walid"],
+                answer: "Thariq bin Ziyad"
+            },
+            {
+                question: "Daulah Bani Umayyah mencapai puncak kejayaan ekspansi wilayah hingga ke barat, yaitu daerah...",
+                options: ["Mesir dan Afrika Utara", "Andalusia dan sebagian Perancis", "India dan Pakistan", "Turki dan Balkan"],
+                answer: "Andalusia dan sebagian Perancis"
+            },
+            {
+                question: "Khalifah Bani Umayyah yang dikenal sebagai pemimpin yang sangat adil dan disebut sebagai 'Khulafaur Rasyidin Kelima' adalah...",
+                options: ["Abdul Malik bin Marwan", "Al-Walid bin Abdul Malik", "Umar bin Abdul Aziz", "Hisyam bin Abdul Malik"],
+                answer: "Umar bin Abdul Aziz"
+            },
+            {
+                question: "Seni arsitektur Islam yang terkenal, yaitu pembangunan Kubah Batu (Dome of the Rock) di Yerusalem, dibangun pada masa khalifah...",
+                options: ["Muawiyah bin Abi Sufyan", "Abdul Malik bin Marwan", "Umar bin Abdul Aziz", "Yazid bin Abdul Malik"],
+                answer: "Abdul Malik bin Marwan"
+            },
+            {
+                question: "Faktor internal utama yang menyebabkan keruntuhan Bani Umayyah adalah...",
+                options: ["Serangan dari Kerajaan Romawi", "Pemberontakan Dinasti Abbasiyah", "Konflik dan persaingan antar suku Arab", "Bencana alam dan wabah penyakit"],
+                answer: "Konflik dan persaingan antar suku Arab"
+            },
+            {
+                question: "Pada tahun berapa Dinasti Bani Umayyah di Damaskus secara resmi runtuh dan digantikan oleh Dinasti Abbasiyah?",
+                options: ["632 M", "750 M", "800 M", "929 M"],
+                answer: "750 M"
+            },
+            {
+                question: "Setelah runtuh di Timur (Damaskus), sisa-sisa Dinasti Umayyah berhasil mendirikan kembali kekuasaan mereka di wilayah...",
+                options: ["Mesir", "Baghdad", "Cordoba (Andalusia)", "Yaman"],
+                answer: "Cordoba (Andalusia)"
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let isAnswerLocked = false;
+
+        const quizScreen = document.getElementById('quiz-screen');
+        const resultScreen = document.getElementById('result-screen');
+        const questionText = document.getElementById('question-text');
+        const questionNumber = document.getElementById('question-number');
+        const optionsContainer = document.getElementById('options-container');
+        const feedbackMessage = document.getElementById('feedback-message');
+        const resultTitle = document.getElementById('result-title');
+        const resultScore = document.getElementById('result-score');
+        const resultAnalysis = document.getElementById('result-analysis');
+        const progressBarIndicator = document.getElementById('progress-indicator');
+        const resultIcon = document.getElementById('result-icon');
+
+        // Fungsi untuk memulai atau mereset kuis
+        function startQuiz() {
+            currentQuestionIndex = 0;
+            score = 0;
+            quizScreen.classList.remove('hidden');
+            resultScreen.classList.add('hidden');
+            loadQuestion();
+        }
+
+        // Fungsi untuk menampilkan pertanyaan
+        function loadQuestion() {
+            isAnswerLocked = false;
+            feedbackMessage.classList.add('opacity-0');
+            feedbackMessage.classList.remove('feedback-correct', 'feedback-incorrect');
+
+            if (currentQuestionIndex >= questions.length) {
+                showResult();
+                return;
+            }
+
+            const currentQuestion = questions[currentQuestionIndex];
+            questionNumber.textContent = `Pertanyaan ${currentQuestionIndex + 1} dari ${questions.length}`;
+            questionText.textContent = currentQuestion.question;
+            
+            // Update Progress Bar
+            const progress = ((currentQuestionIndex) / questions.length) * 100;
+            progressBarIndicator.style.width = `${progress}%`;
+
+            // Hapus opsi sebelumnya dan tampilkan opsi baru
+            optionsContainer.innerHTML = '';
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.textContent = option;
+                button.className = 'w-full text-left p-4 bg-gray-50 text-gray-800 border-2 border-gray-200 rounded-lg shadow-sm hover:bg-green-100 transition duration-200 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 font-medium';
+                button.onclick = () => handleAnswer(option, button, currentQuestion.answer);
+                optionsContainer.appendChild(button);
+            });
+
+            // Re-render lucide icons
+            lucide.createIcons();
+        }
+
+        // Fungsi untuk menangani jawaban pengguna
+        function handleAnswer(selectedOption, button, correctAnswer) {
+            if (isAnswerLocked) return;
+            isAnswerLocked = true;
+
+            const isCorrect = selectedOption === correctAnswer;
+            const allButtons = optionsContainer.querySelectorAll('button');
+
+            // Beri highlight pada semua tombol
+            allButtons.forEach(btn => {
+                btn.classList.remove('hover:bg-green-100');
+                if (btn.textContent === selectedOption) {
+                    // Jawaban yang dipilih
+                    if (isCorrect) {
+                        btn.classList.add('feedback-correct');
+                        btn.classList.add('shadow-xl', 'shadow-green-300');
+                    } else {
+                        btn.classList.add('feedback-incorrect');
+                        btn.classList.add('shadow-xl', 'shadow-red-300');
+                    }
+                } else if (btn.textContent === correctAnswer) {
+                    // Jawaban yang benar
+                    btn.classList.add('bg-green-300', 'border-green-500');
+                } else {
+                    // Jawaban lain
+                    btn.classList.add('opacity-50');
+                }
+                btn.disabled = true;
+            });
+            
+            // Tampilkan pesan feedback
+            if (isCorrect) {
+                score++;
+                feedbackMessage.textContent = '✅ Benar! Masya Allah, jawabanmu tepat.';
+                feedbackMessage.className = 'mt-4 p-3 text-center rounded-lg font-semibold transition-opacity duration-300 feedback-correct shadow-md';
+            } else {
+                feedbackMessage.textContent = '❌ Kurang Tepat. Pelajari lagi tentang tokoh ini.';
+                feedbackMessage.className = 'mt-4 p-3 text-center rounded-lg font-semibold transition-opacity duration-300 feedback-incorrect shadow-md';
+            }
+            feedbackMessage.classList.remove('opacity-0');
+
+            // Lanjut ke pertanyaan berikutnya setelah jeda
+            setTimeout(() => {
+                currentQuestionIndex++;
+                loadQuestion();
+            }, 1500); // Jeda 1.5 detik
+        }
+
+        // Fungsi untuk menampilkan layar hasil
+        function showResult() {
+            quizScreen.classList.add('hidden');
+            resultScreen.classList.remove('hidden');
+
+            const totalQuestions = questions.length;
+            const percentage = (score / totalQuestions) * 100;
+
+            resultScore.textContent = `Skor Akhir: ${score} dari ${totalQuestions}`;
+            progressBarIndicator.style.width = `100%`; // Progress bar penuh
+
+            if (percentage >= 80) {
+                resultTitle.textContent = 'Luar Biasa!';
+                resultAnalysis.textContent = 'Pemahamanmu tentang Sejarah Bani Umayyah sangat baik. Kamu pasti sudah siap untuk ujian!';
+                resultIcon.dataset.lucide = 'trophy';
+                resultIcon.classList.remove('text-orange-500');
+                resultIcon.classList.add('text-amber-500');
+            } else if (percentage >= 50) {
+                resultTitle.textContent = 'Bagus!';
+                resultAnalysis.textContent = 'Pemahamanmu cukup baik, tapi masih ada beberapa konsep penting yang perlu dikuatkan, terutama tentang khalifah dan keruntuhan.';
+                resultIcon.dataset.lucide = 'sparkles';
+                resultIcon.classList.remove('text-amber-500');
+                resultIcon.classList.add('text-orange-500');
+            } else {
+                resultTitle.textContent = 'Perlu Belajar Lagi';
+                resultAnalysis.textContent = 'Jangan menyerah! Coba ulangi kuis ini dan fokuskan pada pendiri, ibukota, dan penaklukan Andalusia. Semangat!';
+                resultIcon.dataset.lucide = 'frown';
+                resultIcon.classList.remove('text-amber-500');
+                resultIcon.classList.add('text-red-500');
+            }
+            
+            lucide.createIcons(); // Perbarui ikon
+        }
+
+        // Mulai kuis saat halaman dimuat
+        window.onload = startQuiz;
+    </script>
+</body>
+</html>
